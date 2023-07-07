@@ -5,13 +5,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Controller
 @RestController
@@ -27,14 +26,14 @@ public class NotesController {
     private List<NoteDTO> getDummyNotes() {
         List<NoteDTO> dummyNotes = new ArrayList<>();
         dummyNotes.add(NoteDTO.builder()
-                .id("1")
+                .id(UUID.fromString("1"))
                 .content("Testing")
                 .createdAt(new Date())
                 .updatedAt(new Date())
                 .build()
         );
         dummyNotes.add(NoteDTO.builder()
-                .id("2")
+                .id(UUID.fromString("2"))
                 .content("Testongz")
                 .createdAt(new Date())
                 .updatedAt(new Date())

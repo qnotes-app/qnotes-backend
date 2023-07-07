@@ -14,6 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "note_group")
 public class Group {
     public static final int MAXIMUM_NOTES = 100;
 

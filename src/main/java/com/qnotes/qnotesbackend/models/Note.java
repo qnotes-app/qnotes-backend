@@ -27,5 +27,6 @@ public class Note {
     private String content;
     private Timestamp createdAt;
     private Timestamp updatedAt;
+    @Column(name = "ordering")
     private Integer order;
 }

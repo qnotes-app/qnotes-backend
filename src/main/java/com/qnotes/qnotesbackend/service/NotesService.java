@@ -23,61 +23,44 @@ public class NotesService {
     @Autowired
     private GroupRepository groupRepository;
 
-    public List<Note> getAllNotes(String groupIdString) {
-        var groupId = UUIDUtils.fromString(groupIdString);
-        var group = groupRepository.findById(groupId);
-        if (group.isEmpty()) {
-            throw new NotFoundException("Couldn't find group with id " + groupId);
-        }
-
-        return noteRepository.findNotesByGroupOrderByOrder(group.get());
+    public List<Note> getAllNotes(UUID groupId) {
+        Group group = getGroupOrNotFound(groupId);
+        return noteRepository.findNotesByGroupOrderByOrder(group);
     }
 
     public Note createNote(CreateNoteDTO request) {
-        var groupId = UUIDUtils.fromString(request.getGroupId());
-        var group = groupRepository.findById(groupId);
-        if (group.isEmpty()) {
-            throw new NotFoundException("Couldn't find group with id " + groupId);
-        }
+        Group group = getGroupOrNotFound(request.getGroupId());
 
-        var prevNoteId = UUIDUtils.fromString(request.getPreviousNote());
-        int order = getOrder(prevNoteId, group.get());
+        int order = getOrder(request.getPreviousNoteId(), group);
 
         Timestamp curTime = TimeUtils.getCurrentTimestamp();
         Note note = Note.builder()
                 .content(request.getContent())
                 .createdAt(curTime)
                 .updatedAt(curTime)
-                .group(group.get())
+                .group(group)
                 .order(order)
                 .build();
         return noteRepository.save(note);
     }
 
     public Note patchNote(PatchNoteDTO request) {
-        var noteId = UUIDUtils.fromString(request.getId());
-        var noteOpt = noteRepository.findById(noteId);
-        if (noteOpt.isEmpty()) {
-            throw new NotFoundException("Couldn't find note with id " + noteId);
-        }
-        Note note = noteOpt.get();
+        Note note = getNoteOrNotFound(request.getId());
 
         if (request.getContent() != null) {
             note.setContent(request.getContent());
         }
 
-        if (request.getPreviousNote() != null || request.isFirst()) {
-            var prevNoteId = UUIDUtils.fromString(request.getPreviousNote());
-            int order = getOrder(prevNoteId, note.getGroup());
+        if (request.getPreviousNoteId() != null || request.isFirst()) {
+            int order = getOrder(request.getPreviousNoteId(), note.getGroup());
             note.setOrder(order);
         }
 
         return noteRepository.save(note);
     }
 
-    public void deleteNote(String noteIdString) {
-        var noteId = UUIDUtils.fromString(noteIdString);
-        noteRepository.deleteById(noteId);
+    public void deleteNote(UUID id) {
+        noteRepository.deleteById(id);
     }
 
     private int getOrder(UUID prevNoteId, Group group) {
@@ -86,13 +69,26 @@ public class NotesService {
             var firstNote = noteRepository.findFirstByGroupOrderByOrder(group);
             order = firstNote.map(note -> getOrderMinusOne(note, group)).orElse(0);
         } else {
-            var prevNote = noteRepository.findById(prevNoteId);
-            if (prevNote.isEmpty()) {
-                throw new NotFoundException("Couldn't find note with id " + prevNoteId);
-            }
-            order = getOrderPlusOne(prevNote.get(), group);
+            Note prevNote = getNoteOrNotFound(prevNoteId);
+            order = getOrderPlusOne(prevNote, group);
         }
         return order;
+    }
+
+    private Note getNoteOrNotFound(UUID id) {
+        var note = noteRepository.findById(id);
+        if (note.isEmpty()) {
+            throw new NotFoundException("Couldn't find note with id " + id);
+        }
+        return note.get();
+    }
+
+    private Group getGroupOrNotFound(UUID id) {
+        var group = groupRepository.findById(id);
+        if (group.isEmpty()) {
+            throw new NotFoundException("Couldn't find group with id " + id);
+        }
+        return group.get();
     }
 
     private int getOrderMinusOne(Note note, Group group) {
