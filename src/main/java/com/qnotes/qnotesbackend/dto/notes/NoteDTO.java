@@ -1,4 +1,4 @@
-package com.qnotes.qnotesbackend.dto;
+package com.qnotes.qnotesbackend.dto.notes;
 
 import lombok.*;
 

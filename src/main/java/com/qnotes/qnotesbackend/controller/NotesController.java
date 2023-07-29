@@ -1,6 +1,6 @@
 package com.qnotes.qnotesbackend.controller;
 
-import com.qnotes.qnotesbackend.dto.NoteDTO;
+import com.qnotes.qnotesbackend.dto.notes.NoteDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;

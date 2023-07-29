@@ -1,14 +1,16 @@
 package com.qnotes.qnotesbackend.service;
 
-import com.qnotes.qnotesbackend.dto.CreateNoteDTO;
-import com.qnotes.qnotesbackend.dto.PatchNoteDTO;
+import com.qnotes.qnotesbackend.dto.notes.BulkNoteMutationDTO;
+import com.qnotes.qnotesbackend.dto.notes.notemutation.CreateNoteDTO;
+import com.qnotes.qnotesbackend.dto.notes.notemutation.DeleteNoteDTO;
+import com.qnotes.qnotesbackend.dto.notes.notemutation.NoteMutationDTO;
+import com.qnotes.qnotesbackend.dto.notes.notemutation.PatchNoteDTO;
 import com.qnotes.qnotesbackend.exceptions.NotFoundException;
 import com.qnotes.qnotesbackend.models.Group;
 import com.qnotes.qnotesbackend.models.Note;
 import com.qnotes.qnotesbackend.repository.GroupRepository;
 import com.qnotes.qnotesbackend.repository.NoteRepository;
 import com.qnotes.qnotesbackend.utils.TimeUtils;
-import com.qnotes.qnotesbackend.utils.UUIDUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +30,20 @@ public class NotesService {
         return noteRepository.findNotesByGroupOrderByOrder(group);
     }
 
-    public Note createNote(CreateNoteDTO request) {
+    public void updateNotes(BulkNoteMutationDTO request) {
+        var mutations = request.convertMutations();
+        for (NoteMutationDTO mutation: mutations) {
+            if (mutation instanceof CreateNoteDTO) {
+                createNote((CreateNoteDTO) mutation);
+            } else if (mutation instanceof PatchNoteDTO) {
+                patchNote((PatchNoteDTO) mutation);
+            } else if  (mutation instanceof DeleteNoteDTO) {
+                deleteNote((DeleteNoteDTO) mutation);
+            }
+        }
+    }
+
+    private void createNote(CreateNoteDTO request) {
         Group group = getGroupOrNotFound(request.getGroupId());
 
         int order = getOrder(request.getPreviousNoteId(), group);
@@ -41,26 +56,26 @@ public class NotesService {
                 .group(group)
                 .order(order)
                 .build();
-        return noteRepository.save(note);
+        noteRepository.save(note);
     }
 
-    public Note patchNote(PatchNoteDTO request) {
+    private void patchNote(PatchNoteDTO request) {
         Note note = getNoteOrNotFound(request.getId());
 
         if (request.getContent() != null) {
             note.setContent(request.getContent());
         }
 
-        if (request.getPreviousNoteId() != null || request.isFirst()) {
+        if (request.getPreviousNoteId() != null || request.getIsFirst()) {
             int order = getOrder(request.getPreviousNoteId(), note.getGroup());
             note.setOrder(order);
         }
 
-        return noteRepository.save(note);
+        noteRepository.save(note);
     }
 
-    public void deleteNote(UUID id) {
-        noteRepository.deleteById(id);
+    private void deleteNote(DeleteNoteDTO request) {
+        noteRepository.deleteById(request.getId());
     }
 
     private int getOrder(UUID prevNoteId, Group group) {

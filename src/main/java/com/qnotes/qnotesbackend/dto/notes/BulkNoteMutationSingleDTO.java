@@ -1,4 +1,4 @@
-package com.qnotes.qnotesbackend.dto;
+package com.qnotes.qnotesbackend.dto.notes;
 
 import lombok.*;
 
@@ -10,9 +10,11 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PatchNoteDTO {
+public class BulkNoteMutationSingleDTO {
+    BulkNoteMutationType type;
     private UUID id;
+    private UUID groupId;
     private String content;
     private UUID previousNoteId;
-    private boolean isFirst;
+    private Boolean isFirst;
 }
