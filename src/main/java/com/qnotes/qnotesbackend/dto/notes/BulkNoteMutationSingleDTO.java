@@ -1,5 +1,6 @@
 package com.qnotes.qnotesbackend.dto.notes;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.UUID;
@@ -11,7 +12,8 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BulkNoteMutationSingleDTO {
-    BulkNoteMutationType type;
+    @NotNull
+    private BulkNoteMutationType type;
     private UUID id;
     private UUID groupId;
     private String content;

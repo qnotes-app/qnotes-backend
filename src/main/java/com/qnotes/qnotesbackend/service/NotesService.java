@@ -30,7 +30,7 @@ public class NotesService {
         return noteRepository.findNotesByGroupOrderByOrder(group);
     }
 
-    public void updateNotes(BulkNoteMutationDTO request) {
+    public void bulkUpdateNotes(BulkNoteMutationDTO request) {
         var mutations = request.convertMutations();
         for (NoteMutationDTO mutation: mutations) {
             if (mutation instanceof CreateNoteDTO) {
